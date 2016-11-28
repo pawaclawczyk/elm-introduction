@@ -51,10 +51,20 @@ viewValidation : Model -> Html Msg
 viewValidation model =
     let
         (color, message) =
-            if model.password == model.passwordAgain then
-                ("green", "OK")
+            if passwordLengthValidation (.password model) then
+                if passwordAgainValidation (.password model) (.passwordAgain model) then
+                    ("green", "OK")
+                else
+                    ("red", "Passwords do not match!")
             else
-                ("red", "Passwords do not match!")
+                ("red", "Password too short!")
     in
         div [ style [ ("color", color) ] ] [ text message ]
 
+passwordLengthValidation : String -> Bool
+passwordLengthValidation password =
+    String.length password >= 8
+
+passwordAgainValidation : String -> String -> Bool
+passwordAgainValidation password passwordAgain =
+    password == passwordAgain
