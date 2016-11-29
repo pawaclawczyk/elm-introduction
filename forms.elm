@@ -1,6 +1,8 @@
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
+import String exposing (length, any)
+import Char exposing (isDigit, isUpper, isLower)
 
 main =
     Html.beginnerProgram { model = model, view = view, update = update }
@@ -51,20 +53,23 @@ viewValidation : Model -> Html Msg
 viewValidation model =
     let
         (color, message) =
-            if passwordLengthValidation (.password model) then
-                if passwordAgainValidation (.password model) (.passwordAgain model) then
-                    ("green", "OK")
-                else
-                    ("red", "Passwords do not match!")
-            else
-                ("red", "Password too short!")
+            if not (passwordLengthValidation model) then ("red", "Password too short!")
+            else if not (passwordAgainValidation model) then ("red", "Passwords do not match!")
+            else if not (passwordContains isDigit model) then ("red", "Password must contain a digit!")
+            else if not (passwordContains isUpper model) then ("red", "Password must contain an uppercase letter!")
+            else if not (passwordContains isLower model) then ("red", "Password must contain a lowercase letter!")
+            else ("green", "OK")
     in
         div [ style [ ("color", color) ] ] [ text message ]
 
-passwordLengthValidation : String -> Bool
-passwordLengthValidation password =
-    String.length password >= 8
+passwordLengthValidation : Model -> Bool
+passwordLengthValidation model =
+    length (.password model) >= 8
 
-passwordAgainValidation : String -> String -> Bool
-passwordAgainValidation password passwordAgain =
-    password == passwordAgain
+passwordAgainValidation : Model -> Bool
+passwordAgainValidation model =
+    (.password model) == (.passwordAgain model)
+
+passwordContains : (Char -> Bool) -> Model -> Bool
+passwordContains check model =
+    any check (.password model)
