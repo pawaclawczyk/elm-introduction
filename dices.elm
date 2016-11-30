@@ -1,28 +1,34 @@
 import Html exposing (..)
 import Html.Events exposing (..)
+import Random
 
 type alias Model =
     {
-        dieFace : Int
+        firstDie : Int,
+        secondDie : Int
     }
 
 type Msg =
     Roll |
-    NewFace Int
+    FirstDieFace Int |
+    SecondDieFace Int
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         Roll ->
-            (model, Random.generate NewFace (Random.int 1 6))
+            (model, Random.generate FirstDieFace (Random.int 1 6))
 
-        NewFace newFace ->
-            (Model newFace, Cmd.none)
+        FirstDieFace firstDieFace ->
+            ({ model | firstDie = firstDieFace }, Random.generate SecondDieFace (Random.int 1 6))
+
+        SecondDieFace secondDieFace ->
+            ({ model | secondDie = secondDieFace }, Cmd.none)
 
 view : Model -> Html Msg
 view model =
     div []
-    [ h1 [] [ text (toString model.dieFace) ]
+    [ h1 [] [ text (toString model.firstDie ++ " " ++ toString model.secondDie) ]
     , button [ onClick Roll ] [ text "Roll" ]
     ]
 
@@ -32,7 +38,7 @@ subscriptions model =
 
 init : (Model, Cmd Msg)
 init =
-    (Model 1, Cmd.none)
+    (Model 1 1, Cmd.none)
 
 main =
     Html.program
